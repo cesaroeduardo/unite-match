@@ -47,6 +47,28 @@ class PhotoUpload {
     }
   }
 
+  // Salvar avatar do UniteAPI no storage
+  async saveAvatar(avatarUrl) {
+    try {
+      await chrome.storage.local.set({ uniteApiAvatar: avatarUrl });
+      return true;
+    } catch (error) {
+      console.error('Erro ao salvar avatar:', error);
+      return false;
+    }
+  }
+
+  // Obter avatar do UniteAPI do storage
+  async getAvatar() {
+    try {
+      const result = await chrome.storage.local.get(['uniteApiAvatar']);
+      return result.uniteApiAvatar || null;
+    } catch (error) {
+      console.error('Erro ao obter avatar:', error);
+      return null;
+    }
+  }
+
   // Criar interface de upload
   createUploadInterface(callback) {
     const container = document.createElement('div');
@@ -86,7 +108,7 @@ class PhotoUpload {
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          margin-bottom: 10px;
+          margin-bottom: 0px;
         ">Selecionar Foto</button>
         
         <div id="photo-preview" style="

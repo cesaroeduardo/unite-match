@@ -546,7 +546,8 @@ class MatchDataExtractor {
           console.log('✅ Tabela de jogadores encontrada, extraindo dados...');
           const matchData = this.extractCompleteMatchDataFromTable(
             table,
-            match
+            match,
+            element
           );
 
           if (matchData) {
@@ -627,7 +628,8 @@ class MatchDataExtractor {
 
           const matchData = this.extractCompleteMatchDataFromTable(
             firstTable,
-            match
+            match,
+            element
           );
           if (matchData) {
             const winnerPlayers = [
@@ -680,7 +682,7 @@ class MatchDataExtractor {
     }
   }
 
-  extractCompleteMatchDataFromTable(table, match) {
+  extractCompleteMatchDataFromTable(table, match, element = null) {
     try {
       console.log('🔍 Extraindo dados completos da tabela...');
 
@@ -695,11 +697,37 @@ class MatchDataExtractor {
         return null;
       }
 
+      // Extrair informação sobre qual time é Purple e qual é Orange baseado na cor do resultado
+      let purpleScore = null;
+      let orangeScore = null;
+      
+      if (element) {
+        // Procurar pelos elementos com as cores dos scores
+        // #7D46E2 (roxo) = Purple Team, #F67C1B (laranja) = Orange Team
+        const scoreElements = element.querySelectorAll('p[color]');
+        for (const scoreEl of scoreElements) {
+          const color = scoreEl.getAttribute('color');
+          const score = parseInt(scoreEl.textContent.trim());
+          
+          if (color === '#7D46E2' || color === '#7d46e2') {
+            // Roxo = Purple Team
+            purpleScore = score;
+            console.log(`🟣 Purple Team score encontrado: ${score}`);
+          } else if (color === '#F67C1B' || color === '#f67c1b') {
+            // Laranja = Orange Team
+            orangeScore = score;
+            console.log(`🟠 Orange Team score encontrado: ${score}`);
+          }
+        }
+      }
+
       const matchData = {
         matchDate: matchDate,
         matchType: matchType,
         winnerTeam: winnerTeam,
         defeatedTeam: defeatedTeam,
+        purpleScore: purpleScore,
+        orangeScore: orangeScore,
       };
 
       console.log('✅ Dados estruturados extraídos com sucesso');
@@ -1376,8 +1404,168 @@ class UniteApiScraper {
     console.log('✅ UniteApi Scraper inicializado (versão simplificada)');
     console.log('🌍 URL da página:', window.location.href);
 
+    // Verificar se está na versão /pt/ que não funciona
+    if (this.checkIfPortugueseVersion()) {
+      this.showPortugueseVersionWarning();
+      return; // Não continuar inicialização se estiver em /pt/
+    }
+
     // Importar fonte Sora
     this.importSoraFont();
+  }
+
+  // Verificar se está na versão portuguesa (/pt/)
+  checkIfPortugueseVersion() {
+    const url = window.location.href;
+    return url.includes('/pt/');
+  }
+
+  // Mostrar aviso para versão portuguesa
+  showPortugueseVersionWarning() {
+    try {
+      // Garantir que a fonte Sora está importada
+      this.importSoraFont();
+      
+      this.removeExistingNotifications();
+
+      const notification = document.createElement('div');
+      notification.id = 'unite-scraper-pt-warning';
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+        color: #ffffff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        z-index: 10000;
+        font-family: "Sora", sans-serif;
+        max-width: 400px;
+        border: 2px solid #ff9800;
+        animation: slideIn 0.3s ease-out;
+      `;
+
+      // Criar URL em inglês substituindo /pt/ por /en/
+      const currentUrl = window.location.href;
+      const englishUrl = currentUrl.replace('/pt/', '/en/');
+
+      notification.innerHTML = `
+        <div style="margin-bottom: 20px;">
+          <div style="
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+            float: left;
+          ">⚠️</div>
+          <div style="margin-left: 65px; font-family: 'Sora', sans-serif;">
+            <div style="font-weight: 600; font-size: 20px; margin-bottom: 5px; color: #ff9800; font-family: 'Sora', sans-serif;">Versão Portuguesa Não Suportada</div>
+            <div style="color: #b0b0b0; font-size: 14px; line-height: 1.4; font-family: 'Sora', sans-serif;">
+              A extensão não funciona na versão /pt/ do site.
+            </div>
+          </div>
+          <div style="clear: both;"></div>
+        </div>
+
+        <div style="
+          background: rgba(255, 152, 0, 0.1);
+          border: 1px solid rgba(255, 152, 0, 0.3);
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 20px;
+        ">
+          <div style="color: #b0b0b0; font-size: 13px; line-height: 1.6; font-family: 'Sora', sans-serif;">
+            Por favor, acesse a versão em inglês do site para usar a extensão.
+          </div>
+        </div>
+
+        <button id="redirect-to-en-btn" style="
+          width: 100%;
+          background: linear-gradient(135deg, #ff9800, #f57c00);
+          color: white;
+          border: none;
+          padding: 15px;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 10px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+          font-family: 'Sora', sans-serif;
+        ">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>🌐 Ir para Versão em Inglês</span>
+          </div>
+        </button>
+
+        <button id="close-pt-warning" style="
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: none;
+          border: none;
+          color: #b0b0b0;
+          cursor: pointer;
+          padding: 5px;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          font-size: 16px;
+        ">✕</button>
+      `;
+
+      // Adicionar estilos CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+
+        #redirect-to-en-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4) !important;
+        }
+
+        #close-pt-warning:hover {
+          background: rgba(255,255,255,0.1) !important;
+          color: #ffffff !important;
+        }
+
+        #unite-scraper-pt-warning {
+          backdrop-filter: blur(10px);
+        }
+      `;
+      document.head.appendChild(style);
+
+      document.body.appendChild(notification);
+
+      // Event listener para redirecionar
+      document
+        .getElementById('redirect-to-en-btn')
+        .addEventListener('click', () => {
+          window.location.href = englishUrl;
+        });
+
+      document.getElementById('close-pt-warning').addEventListener('click', () => {
+        notification.remove();
+      });
+
+      console.log('⚠️ Versão portuguesa detectada - aviso exibido');
+    } catch (error) {
+      console.error('❌ Erro ao mostrar aviso de versão portuguesa:', error);
+    }
   }
 
   importSoraFont() {
@@ -1421,6 +1609,12 @@ class UniteApiScraper {
   async startScraping() {
     if (this.isScraping) {
       console.log('⚠️ Scraping já em andamento...');
+      return;
+    }
+
+    // Verificar se está na versão /pt/ que não funciona
+    if (this.checkIfPortugueseVersion()) {
+      this.showPortugueseVersionWarning();
       return;
     }
 
@@ -1510,12 +1704,30 @@ class UniteApiScraper {
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 70, 0, 0.3);
           ">
             <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
               <span>📸 Gerar Imagem da Partida Aberta</span>
+            </div>
+          </button>
+
+        <button id="upload-photo-btn" style="
+            width: 100%;
+            background: transparent;
+            color: #b0b0b0;
+            border: 1px solid #404040;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+          ">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>📷 Fazer Upload de Foto</span>
             </div>
           </button>
 
@@ -1552,6 +1764,12 @@ class UniteApiScraper {
           box-shadow: 0 6px 20px rgba(255, 70, 0, 0.4) !important;
         }
 
+        #upload-photo-btn:hover {
+          background: rgba(255, 70, 0, 0.1) !important;
+          border-color: rgba(255, 70, 0, 0.5) !important;
+          color: #ffffff !important;
+        }
+
         #close-initial:hover {
            background: rgba(255,255,255,0.1) !important;
            color: #ffffff !important;
@@ -1578,8 +1796,27 @@ class UniteApiScraper {
           this.startGenerateImageFlow();
         });
 
+      // Event listener para o botão de upload de foto
+      document
+        .getElementById('upload-photo-btn')
+        .addEventListener('click', () => {
+          if (window.PhotoUpload) {
+            const photoUpload = new window.PhotoUpload();
+            photoUpload.createUploadInterface(async (uploaded) => {
+              if (uploaded) {
+                console.log('✅ Foto do usuário salva com sucesso');
+              }
+            });
+          }
+        });
+
       document.getElementById('close-initial').addEventListener('click', () => {
         this.removeExistingNotifications();
+      });
+
+      // Extrair avatar do perfil automaticamente
+      this.extractAvatarFromProfile().catch(err => {
+        console.warn('⚠️ Não foi possível extrair avatar do perfil:', err);
       });
 
       console.log('✅ Tela inicial exibida');
@@ -1619,7 +1856,13 @@ class UniteApiScraper {
       
       if (!openMatchElement) {
         this.removeLoadingNotification();
-        this.showErrorNotification('Nenhuma partida está aberta. Por favor, abra (expanda) a partida que deseja gerar a imagem antes de clicar no botão.');
+        this.showErrorNotification(
+          'Nenhuma partida está aberta. Por favor, abra (expanda) a partida que deseja gerar a imagem antes de clicar no botão.',
+          () => {
+            // Callback de retry - tentar novamente
+            this.startGenerateImageFlow();
+          }
+        );
         return;
       }
       
@@ -1940,7 +2183,7 @@ class UniteApiScraper {
     }
   }
 
-  showErrorNotification(errorMessage) {
+  showErrorNotification(errorMessage, retryCallback = null) {
     try {
       this.removeExistingNotifications();
 
@@ -1961,6 +2204,29 @@ class UniteApiScraper {
         border: 1px solid #f44336;
         animation: slideIn 0.3s ease-out;
       `;
+
+      // Botão de retry se callback fornecido
+      const retryButton = retryCallback ? `
+        <button id="retry-action-btn" style="
+          width: 100%;
+          background: linear-gradient(135deg, #FF4600, #ea580c);
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 10px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(255, 70, 0, 0.3);
+          font-family: 'Sora', sans-serif;
+        ">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>🔄 Tentar Novamente</span>
+          </div>
+        </button>
+      ` : '';
 
       notification.innerHTML = `
         <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -1993,6 +2259,8 @@ class UniteApiScraper {
           </div>
         </div>
 
+        ${retryButton}
+
         <button id="close-notification" style="
           position: absolute;
           top: 15px;
@@ -2015,15 +2283,38 @@ class UniteApiScraper {
 
       document.body.appendChild(notification);
 
+      // Event listener para botão de retry
+      if (retryCallback) {
+        const retryBtn = document.getElementById('retry-action-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            this.removeExistingNotifications();
+            retryCallback();
+          });
+          
+          // Adicionar estilo hover
+          retryBtn.addEventListener('mouseenter', () => {
+            retryBtn.style.transform = 'translateY(-2px)';
+            retryBtn.style.boxShadow = '0 6px 20px rgba(255, 70, 0, 0.4) !important';
+          });
+          retryBtn.addEventListener('mouseleave', () => {
+            retryBtn.style.transform = 'translateY(0)';
+            retryBtn.style.boxShadow = '0 4px 15px rgba(255, 70, 0, 0.3)';
+          });
+        }
+      }
+
       document
         .getElementById('close-notification')
         .addEventListener('click', () => {
           this.removeExistingNotifications();
         });
 
+      // Aumentar timeout se tiver botão de retry (usuário pode querer tentar)
+      const timeout = retryCallback ? 60000 : 20000;
       setTimeout(() => {
         this.removeExistingNotifications();
-      }, 20000);
+      }, timeout);
 
       console.log('❌ Notificação de erro exibida');
     } catch (error) {
@@ -2142,6 +2433,12 @@ class UniteApiScraper {
     const initial = document.getElementById('unite-scraper-initial');
     if (initial) {
       initial.remove();
+    }
+
+    // Remover aviso de versão portuguesa se existir
+    const ptWarning = document.getElementById('unite-scraper-pt-warning');
+    if (ptWarning) {
+      ptWarning.remove();
     }
   }
 
@@ -2282,6 +2579,74 @@ class UniteApiScraper {
         sourcePlayerName: 'Unknown',
         sourcePlayerID: 'Unknown',
       };
+    }
+  }
+
+  // Extrair avatar do perfil do UniteAPI
+  async extractAvatarFromProfile() {
+    try {
+      console.log('🔍 Extraindo avatar do perfil do UniteAPI...');
+
+      // Procurar por imagens que contenham t_CreateRole_ (avatar do personagem)
+      const avatarImages = document.querySelectorAll('img[src*="t_CreateRole_"], img[srcset*="t_CreateRole_"]');
+      
+      let avatarUrl = null;
+
+      // Tentar encontrar a imagem do avatar
+      for (const img of avatarImages) {
+        // Priorizar srcset (geralmente tem melhor qualidade)
+        if (img.srcset) {
+          const srcsetUrls = img.srcset.split(',').map(s => s.trim().split(' ')[0]);
+          if (srcsetUrls.length > 0) {
+            avatarUrl = srcsetUrls[srcsetUrls.length - 1]; // Pegar a última (maior resolução)
+            break;
+          }
+        }
+        
+        // Fallback para src se srcset não disponível
+        if (!avatarUrl && img.src) {
+          avatarUrl = img.src;
+          break;
+        }
+      }
+
+      // Se não encontrou t_CreateRole_, tentar t_activity_bg_ (background do avatar)
+      if (!avatarUrl) {
+        const bgImages = document.querySelectorAll('img[src*="t_activity_bg_"], img[srcset*="t_activity_bg_"]');
+        for (const img of bgImages) {
+          if (img.srcset) {
+            const srcsetUrls = img.srcset.split(',').map(s => s.trim().split(' ')[0]);
+            if (srcsetUrls.length > 0) {
+              avatarUrl = srcsetUrls[srcsetUrls.length - 1];
+              break;
+            }
+          }
+          if (!avatarUrl && img.src) {
+            avatarUrl = img.src;
+            break;
+          }
+        }
+      }
+
+      if (avatarUrl) {
+        // Aumentar resolução da imagem usando o método do matchExtractor
+        const highResUrl = this.matchExtractor.increaseImageResolution(avatarUrl, 256);
+        
+        // Salvar no storage
+        if (window.PhotoUpload) {
+          const photoUpload = new window.PhotoUpload();
+          await photoUpload.saveAvatar(highResUrl);
+          console.log('✅ Avatar extraído e salvo:', highResUrl);
+        }
+        
+        return highResUrl;
+      } else {
+        console.log('⚠️ Avatar não encontrado na página de perfil');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Erro ao extrair avatar do perfil:', error);
+      return null;
     }
   }
 
@@ -2792,24 +3157,7 @@ class UniteApiScraper {
         return;
       }
 
-      // Verificar se o usuário tem foto
-      const photoUpload = new (window.PhotoUpload || PhotoUpload)();
-      const hasPhoto = await photoUpload.getPhoto();
-      
-      if (!hasPhoto) {
-        // Mostrar opção de upload
-        const shouldUpload = confirm('Você ainda não fez upload de uma foto. Deseja fazer agora?');
-        if (shouldUpload) {
-          photoUpload.createUploadInterface(async (uploaded) => {
-            if (uploaded) {
-              await this.generateImageForMatch(match, sourcePlayerName);
-            }
-          });
-          return;
-        }
-      }
-
-      // Gerar imagem
+      // Gerar imagem (avatar será usado como fallback se não houver foto do usuário)
       const imageGenerator = new window.ImageGenerator();
       await imageGenerator.generateAndDownload(match, sourcePlayerName);
 

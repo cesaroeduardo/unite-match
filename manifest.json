@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "UniteAPI Data Scraper",
+  "name": "Unite Match Stats Generator",
   "version": "1.0",
-  "description": "Coleta e analisa dados de jogadores do Pokémon Unite no UniteApi via notificações na tela",
+  "description": "Gera imagens visuais de estatísticas das partidas do Pokémon Unite a partir do UniteAPI.dev. Cria imagens personalizadas com estatísticas detalhadas, gráficos e informações dos jogadores.",
   "permissions": ["activeTab", "scripting", "storage", "tabs", "contextMenus"],
   "host_permissions": ["https://uniteapi.dev/*"],
   "action": {
-    "default_title": "UniteAPI Data Scraper - Clique para executar",
+    "default_title": "Unite Match Stats Generator - Gerar imagem de estatísticas",
     "default_width": 400,
     "default_height": 300
   },

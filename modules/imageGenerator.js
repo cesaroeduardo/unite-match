@@ -31,7 +31,7 @@ class ImageGenerator {
     this.ctx = null;
   }
   
-  initCanvas(width = 1400, height = 900) {
+  initCanvas(width = 1400, height = 905) {
     this.canvas = document.createElement('canvas');
     this.canvas.width = width;
     this.canvas.height = height;
@@ -166,56 +166,80 @@ class ImageGenerator {
   // Desenhar seção do jogador (esquerda - laranja) - Layout atualizado
   async drawPlayerSection(x, y, width, height, mainPlayer, userPhoto) {
     const ctx = this.ctx;
-    const padding = 20; // gap-5 = 20px (gap interno das seções)
-    const gap = 20; // gap-5 = 20px (gap interno das seções)
-    let currentY = y + padding;
+    const gap = 20; // gap-5 = 20px (conforme preview linha 93: gap-5)
+    let currentY = y; // Começar sem padding no topo
+    
+    // Log para debug de altura
+    console.log('📏 Altura disponível para seção do jogador:', height);
     
     // Calcular altura disponível para garantir que não extrapole
     const maxY = y + height;
     
-    // Barra do Nome do Jogador (Topo) - h-16 = 64px, text-3xl = 30px
+    // Barra do Nome do Jogador (Topo) - h-20 = 80px (atualizado), text-3xl = 30px
+    // No preview: sem padding lateral, ocupa toda a largura da seção
     ctx.fillStyle = '#ea580c';
-    this.roundRect(x + padding, currentY, width - (padding * 2), 64, 16);
+    this.roundRect(x, currentY, width, 80, 16);
     ctx.fill();
     
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 30px "Exo 2", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(mainPlayer.playerName || 'Unknown', x + width / 2, currentY + 44);
+    ctx.fillText(mainPlayer.playerName || 'Unknown', x + width / 2, currentY + 52); // Ajustado para h-20
     ctx.textAlign = 'left';
-    currentY += 64 + gap;
+    currentY += 80 + gap;
     
     // Layout em duas colunas
     const colLeftWidth = 288; // w-72 = 288px
-    const colRightWidth = width - colLeftWidth - (padding * 2) - gap;
+    const colRightWidth = width - colLeftWidth - gap;
+    
+    // Definir tamanhos dos items ANTES de calcular photoHeight
+    const itemHeight = 96; // h-24 = 96px (atualizado de h-20)
+    const itemGap = 20; // gap-5 = 20px (conforme preview linha 125: gap-5)
     
     // Coluna Esquerda: Foto
-    const colLeftX = x + padding;
+    const colLeftX = x;
     
-    // Foto Quadrada (w-72 h-[280px] = 288x280px)
+    // Foto Quadrada - Mesma altura do bloco de moves (3 items de 96px + 2 gaps de 20px = 328px)
+    const photoHeight = (itemHeight * 3) + (itemGap * 2); // 96*3 + 20*2 = 328px
+    const photoWidth = colLeftWidth; // Largura da coluna esquerda (288px)
+    
     if (userPhoto) {
       const photoImg = await this.loadImage(userPhoto);
       if (photoImg) {
         ctx.fillStyle = '#ea580c';
-        this.roundRect(colLeftX, currentY, 288, 280, 16);
+        this.roundRect(colLeftX, currentY, photoWidth, photoHeight, 16);
         ctx.fill();
         ctx.save();
-        this.roundRect(colLeftX, currentY, 288, 280, 16);
+        this.roundRect(colLeftX, currentY, photoWidth, photoHeight, 16);
         ctx.clip();
-        ctx.drawImage(photoImg, colLeftX, currentY, 288, 280);
+        // Centralizar e cobrir toda a área (object-cover)
+        const imgAspect = photoImg.width / photoImg.height;
+        const boxAspect = photoWidth / photoHeight;
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (imgAspect > boxAspect) {
+          drawHeight = photoHeight;
+          drawWidth = photoHeight * imgAspect;
+          drawX = colLeftX - (drawWidth - photoWidth) / 2;
+          drawY = currentY;
+        } else {
+          drawWidth = photoWidth;
+          drawHeight = photoWidth / imgAspect;
+          drawX = colLeftX;
+          drawY = currentY - (drawHeight - photoHeight) / 2;
+        }
+        ctx.drawImage(photoImg, drawX, drawY, drawWidth, drawHeight);
         ctx.restore();
       }
     } else {
       // Placeholder se não tiver foto
       ctx.fillStyle = '#ea580c';
-      this.roundRect(colLeftX, currentY, 288, 280, 16);
+      this.roundRect(colLeftX, currentY, photoWidth, photoHeight, 16);
       ctx.fill();
     }
     
     // Coluna Direita: Habilidades e Battle Item
     const colRightX = colLeftX + 288 + gap;
-    const itemHeight = 80; // h-20 = 80px
-    const itemGap = 20; // gap-5 = 20px
     let itemY = currentY;
     
     // Coluna de Abilities e Battle Item (sem held items)
@@ -316,8 +340,8 @@ class ImageGenerator {
       ctx.fill();
     }
     
-    // Pokémon Imagem (abaixo da foto/items) - h-48 = 192px, w-60 h-60 = 240x240px
-    const pokemonY = currentY + 280 + gap;
+    // Pokémon Imagem (abaixo da foto/items) - ocupa o espaço restante com overflow hidden
+    const pokemonY = currentY + photoHeight + gap;
     let pokemonImagePath = `/public/pokemons/stat-${(mainPlayer.pokemon || 'unknown').toLowerCase().replace(/\s+/g, '-')}.png`;
     
     if (this.pokemonData && typeof this.pokemonData.getPokemonImagePath === 'function') {
@@ -329,93 +353,96 @@ class ImageGenerator {
       }
     }
     
+    // Container do Pokémon - altura calculada baseada no espaço restante
+    // Espaço usado até agora: Nome(80) + Gap(20) + Foto/Moves(328) + Gap(20) = 448px
+    // Espaço para stats: 160px + Gap(20) = 180px
+    // Espaço restante para pokemon: totalHeight - 448 - 180 = altura disponível
+    const usedBeforePokemon = 80 + gap + photoHeight + gap;
+    const neededAfterPokemon = gap + 160; // Gap + stats
+    const pokemonContainerHeight = height - usedBeforePokemon - neededAfterPokemon;
+    
+    // Imagem do pokemon é 320x320px, mas vamos cortá-la se necessário
+    const pokemonImgSize = 320;
+    
     ctx.fillStyle = '#f97316';
-    const pokemonContainerHeight = 192; // h-48
-    this.roundRect(x + padding, pokemonY, width - (padding * 2), pokemonContainerHeight, 16);
+    this.roundRect(x, pokemonY, width, pokemonContainerHeight, 16);
     ctx.fill();
     
     const pokemonImg = await this.loadImage(pokemonImagePath);
     if (pokemonImg) {
-      // Aplicar clip para overflow-hidden
+      // Aplicar clip para overflow-hidden (cortar a imagem)
       ctx.save();
-      this.roundRect(x + padding, pokemonY, width - (padding * 2), pokemonContainerHeight, 16);
+      this.roundRect(x, pokemonY, width, pokemonContainerHeight, 16);
       ctx.clip();
       
-      // Centralizar imagem 240x240px no container de 192px de altura
-      const pokemonWidth = 240;
-      const pokemonHeight = 240;
-      const pokemonX = x + (width - pokemonWidth) / 2;
-      const pokemonImgY = pokemonY + (pokemonContainerHeight - pokemonHeight) / 2;
-      ctx.drawImage(pokemonImg, pokemonX, pokemonImgY, pokemonWidth, pokemonHeight);
+      // Centralizar imagem no container
+      const pokemonX = x + (width - pokemonImgSize) / 2;
+      const pokemonImgY = pokemonY + (pokemonContainerHeight - pokemonImgSize) / 2;
+      ctx.drawImage(pokemonImg, pokemonX, pokemonImgY, pokemonImgSize, pokemonImgSize);
       
       ctx.restore();
     }
     
-    // Estatísticas Pessoais (2 linhas)
-    const statsY = pokemonY + 192 + gap;
+    // Estatísticas Pessoais (apenas 1 linha agora - Damage Dealt, Taken, Recovery)
+    const statsY = pokemonY + pokemonContainerHeight + gap;
     
-    // Primeira linha: Score, Knockouts, Assists, Interrupts - h-32 = 128px, text-4xl = 36px, text-lg = 18px
+    // Linha única: Damage Dealt, Damage Taken, Recovery - h-40 = 160px (atualizado)
+    // No preview: p-4 = 16px padding interno, gap-5 = 20px entre colunas
+    const statsPadding = 16; // p-4
+    const statsGap = 20; // gap-5
     ctx.fillStyle = '#f97316';
-    this.roundRect(x + padding, statsY, width - (padding * 2), 128, 16);
+    this.roundRect(x, statsY, width, 160, 16);
     ctx.fill();
     
-    const statsRow1 = [
-      { label: 'Score', value: mainPlayer.playerScore || 0 },
-      { label: 'Knockouts', value: mainPlayer.kills || 0 },
-      { label: 'Assists', value: mainPlayer.assists || 0 },
-      { label: 'Interrupts', value: mainPlayer.interrupts || 0 },
-    ];
-    
-    const statWidth = (width - (padding * 2)) / 4;
-    statsRow1.forEach((stat, i) => {
-      const statX = x + padding + (statWidth * i) + statWidth / 2;
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 36px "Exo 2", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(String(stat.value), statX, statsY + 50);
-      
-      ctx.font = '18px "Exo 2", sans-serif';
-      ctx.fillText(stat.label, statX, statsY + 85);
-    });
-    
-    // Segunda linha: Damage Dealt, Damage Taken, Recovery - h-32 = 128px
-    const statsRow2Y = statsY + 128 + gap;
-    ctx.fillStyle = '#f97316';
-    this.roundRect(x + padding, statsRow2Y, width - (padding * 2), 128, 16);
-    ctx.fill();
-    
-    const statsRow2 = [
+    const stats = [
       { label: 'Damage Dealt', value: (mainPlayer.damageDone || 0).toLocaleString() },
       { label: 'Damage Taken', value: (mainPlayer.damageTaken || 0).toLocaleString() },
       { label: 'Recovery', value: (mainPlayer.damageHealed || 0).toLocaleString() },
     ];
     
-    const statWidthRow2 = (width - (padding * 2)) / 3;
-    statsRow2.forEach((stat, i) => {
-      const statX = x + padding + (statWidthRow2 * i) + statWidthRow2 / 2;
+    // Calcular largura de cada coluna considerando gap entre elas
+    const statsContentWidth = width - (statsPadding * 2);
+    const statWidth = (statsContentWidth - (statsGap * 2)) / 3;
+    const statsStartX = x + statsPadding;
+    
+    stats.forEach((stat, i) => {
+      const statX = statsStartX + (statWidth + statsGap) * i + statWidth / 2;
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 36px "Exo 2", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(String(stat.value), statX, statsRow2Y + 50);
+      // Centralizar verticalmente: container 160px
+      // Total conteúdo: 36px (número) + 8px (gap aumentado) + 18px (label) = 62px
+      // Padding top para centralizar: (160 - 62) / 2 = 49px
+      const gapBetweenValueAndLabel = 8; // Aumentado de 4px para 8px
+      ctx.fillText(String(stat.value), statX, statsY + 49 + 36);
       
       ctx.font = '18px "Exo 2", sans-serif';
-      ctx.fillText(stat.label, statX, statsRow2Y + 85);
+      // Label abaixo do número com espaçamento aumentado
+      ctx.fillText(stat.label, statX, statsY + 49 + 36 + gapBetweenValueAndLabel + 18);
     });
     
     ctx.textAlign = 'left';
     
     // Verificar se extrapolou a altura
-    const finalY = statsRow2Y + 128;
+    const finalY = statsY + 160;
+    const usedHeight = finalY - y;
+    console.log(`📏 Seção do jogador:`);
+    console.log(`   - Largura: ${width}px`);
+    console.log(`   - Altura usada: ${usedHeight}px`);
+    console.log(`   - Altura disponível: ${height}px`);
+    console.log(`   - Pokemon container: ${pokemonContainerHeight}px`);
+    console.log(`   - Componentes: Nome(80) + Gap(20) + Foto(${photoHeight}) + Gap(20) + Pokemon(${pokemonContainerHeight}) + Gap(20) + Stats(160)`);
     if (finalY > maxY) {
       console.warn(`⚠️ Seção do jogador extrapolou: ${finalY} > ${maxY} (diferença: ${finalY - maxY}px)`);
+    } else {
+      console.log(`✅ Seção do jogador OK (sobram ${maxY - finalY}px)`);
     }
   }
   
   // Desenhar seção central - Layout atualizado
   async drawCenterSection(x, y, width, height, matchData, mainPlayer) {
     const ctx = this.ctx;
-    const padding = 16;
-    const gap = 12;
+    const gap = 20; // gap-5 = 20px entre elementos (conforme preview linha 176)
     
     try {
       // Determinar se ganhou
@@ -431,78 +458,105 @@ class ImageGenerator {
         winnerTeam.player4, winnerTeam.player5
       ].some(p => p && p.playerName === mainPlayer.playerName);
       
-      const teamScore = isWinner ? winnerTeam.totalScore : defeatedTeam.totalScore;
-      const opponentScore = isWinner ? defeatedTeam.totalScore : winnerTeam.totalScore;
+      // Determinar qual time o usuário está baseado na cor do resultado
+      // No HTML: #7D46E2 (roxo) = Purple Team, #F67C1B (laranja) = Orange Team
+      // Verificar se há informação sobre qual time é Purple e qual é Orange no matchData
+      let purpleScore = matchData.fullMatchData?.purpleScore;
+      let orangeScore = matchData.fullMatchData?.orangeScore;
       
-      let currentY = y + padding;
+      // Se não houver informação de cor, usar os scores dos times diretamente
+      // Assumir que o primeiro time (roxo) é Purple e o segundo (laranja) é Orange
+      if (purpleScore === null || purpleScore === undefined || orangeScore === null || orangeScore === undefined) {
+        // Por padrão, usar os scores dos times na ordem que aparecem
+        purpleScore = winnerTeam.totalScore;
+        orangeScore = defeatedTeam.totalScore;
+      }
       
-      // Placar da Partida (Topo) - h-16 (64px) para nome, h-20 (80px) para score, text-3xl (30px)
-      const teamWidth = (width - padding * 2 - gap) / 2;
+      // Determinar qual time o usuário está (Purple ou Orange)
+      const userTeamScore = isWinner ? winnerTeam.totalScore : defeatedTeam.totalScore;
+      const userIsInPurpleTeam = userTeamScore === purpleScore;
+      const userIsInOrangeTeam = userTeamScore === orangeScore;
       
-      // Time 1 (Roxo)
+      // Determinar os nomes dos times
+      const purpleTeamName = userIsInPurpleTeam ? 'Player Team' : 'Purple Team';
+      const orangeTeamName = userIsInOrangeTeam ? 'Player Team' : 'Orange Team';
+      
+      let currentY = y;
+      
+      // Placar da Partida (Topo) - h-20 (80px) para nome (mesmo tamanho do box do jogador)
+      // No preview: gap-5 = 20px entre os times
+      const teamWidth = (width - gap) / 2;
+      const teamNameHeight = 80; // Mesmo tamanho do box do nome do jogador (h-20)
+      
+      // Time 1 (Roxo) - Purple Team
       ctx.fillStyle = '#7c3aed';
-      this.roundRect(x + padding, currentY, teamWidth, 64, 16);
+      this.roundRect(x, currentY, teamWidth, teamNameHeight, 16);
       ctx.fill();
       
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px "Exo 2", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(isWinner ? 'Your Team' : 'Enemy Team', x + padding + teamWidth / 2, currentY + 44);
+      ctx.fillText(purpleTeamName, x + teamWidth / 2, currentY + 52); // Ajustado para h-20
       
-      currentY += 64 + gap;
+      currentY += teamNameHeight + gap;
       
       ctx.fillStyle = '#7c3aed';
-      this.roundRect(x + padding, currentY, teamWidth, 80, 16);
-      ctx.fill();
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px "Exo 2", sans-serif';
-      ctx.fillText(`Score: ${teamScore}`, x + padding + teamWidth / 2, currentY + 50);
-      
-      // Time 2 (Laranja)
-      const team2X = x + padding + teamWidth + gap;
-      currentY = y + padding;
-      
-      ctx.fillStyle = '#ea580c';
-      this.roundRect(team2X, currentY, teamWidth, 64, 16);
+      this.roundRect(x, currentY, teamWidth, 96, 16); // h-24 = 96px
       ctx.fill();
       
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px "Exo 2", sans-serif';
-      ctx.fillText(isWinner ? 'Enemy Team' : 'Your Team', team2X + teamWidth / 2, currentY + 44);
+      ctx.fillText(`Score: ${purpleScore}`, x + teamWidth / 2, currentY + 60);
       
-      currentY += 64 + gap;
+      // Time 2 (Laranja) - Orange Team
+      const team2X = x + teamWidth + gap;
+      currentY = y;
       
-      ctx.fillStyle = '#f97316';
-      this.roundRect(team2X, currentY, teamWidth, 80, 16);
+      ctx.fillStyle = '#ea580c';
+      this.roundRect(team2X, currentY, teamWidth, teamNameHeight, 16);
       ctx.fill();
       
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 24px "Exo 2", sans-serif';
-      ctx.fillText(`Score: ${opponentScore}`, team2X + teamWidth / 2, currentY + 50);
+      ctx.font = 'bold 30px "Exo 2", sans-serif';
+      ctx.fillText(orangeTeamName, team2X + teamWidth / 2, currentY + 52); // Ajustado para h-20
+      
+      currentY += teamNameHeight + gap;
+      
+      ctx.fillStyle = '#f97316';
+      this.roundRect(team2X, currentY, teamWidth, 96, 16); // h-24 = 96px
+      ctx.fill();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px "Exo 2", sans-serif';
+      ctx.fillText(`Score: ${orangeScore}`, team2X + teamWidth / 2, currentY + 60);
       
       ctx.textAlign = 'left';
       
       // Radar Chart (Centro) - com título "Stat Distribution" abaixo
-      const radarY = y + padding + 64 + gap + 80 + gap;
+      // Preview: altura fixa h-[486px]
+      const radarY = y + teamNameHeight + gap + 96 + gap; // Ajustado para h-20 do nome do time
+      const radarHeight = 476; // Altura fixa conforme preview
       const titleHeight = 40; // Espaço para o título
-      const genStatsHeightValue = 128; // Altura das estatísticas gerais (h-32)
+      const genStatsHeightValue = 160; // Altura das estatísticas gerais (h-40 atualizado)
       const genStatsHeightWithGap = genStatsHeightValue + gap; // Altura + gap
-      const radarHeight = height - (radarY - y) - genStatsHeightWithGap - titleHeight;
       
       ctx.fillStyle = '#7c3aed';
-      this.roundRect(x + padding, radarY, width - (padding * 2), radarHeight, 16);
+      this.roundRect(x, radarY, width, radarHeight, 16);
       ctx.fill();
       
       // Desenhar radar chart dentro da área (deixar espaço para o título)
-      // No preview: SVG tem viewBox="0 0 200 200" e max-w-xs (320px)
+      // Diminuir tamanho do gráfico e centralizar no box
+      const titleBottomSpacing = 30; // Aumentado de 10 para 30px (espaçamento do título)
       const radarCenterX = x + width / 2;
-      const radarCenterY = radarY + (radarHeight - titleHeight) / 2;
-      // Limitar tamanho máximo do radar para corresponder ao preview (max-w-xs = 320px)
-      const maxRadarSize = 320;
-      const availableWidth = width - padding * 2 - 40;
-      const availableHeight = radarHeight - titleHeight - 40;
-      const radarSize = Math.min(maxRadarSize, availableWidth, availableHeight);
+      // Centralizar verticalmente, deixando mais espaço para o título embaixo
+      const availableHeightForRadar = radarHeight - titleHeight - titleBottomSpacing;
+      const radarCenterY = radarY + (radarHeight - titleHeight - titleBottomSpacing) / 2;
+      
+      // Diminuir tamanho do radar (usar menos espaço)
+      const availableWidth = width - 80; // Padding lateral aumentado
+      const availableHeight = availableHeightForRadar - 40; // Padding vertical
+      // Usar 70% do espaço disponível (reduzido de 90%)
+      const radarSize = Math.min(availableWidth * 0.70, availableHeight * 0.70, 350); // Reduzido máximo para 350px
       const radarRadius = radarSize / 2;
       
       // Calcular stats do radar
@@ -534,7 +588,8 @@ class ImageGenerator {
       ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
       ctx.lineWidth = 1;
       ctx.fillStyle = '#e9d5ff';
-      ctx.font = '10px "Exo 2", sans-serif';
+      // Aumentar tamanho da fonte dos labels (de 10px para 14px para melhor legibilidade)
+      ctx.font = 'bold 14px "Exo 2", sans-serif';
       ctx.textAlign = 'center';
       
       for (let i = 0; i < axes; i++) {
@@ -547,8 +602,9 @@ class ImageGenerator {
         ctx.lineTo(x1, y1);
         ctx.stroke();
         
-        const labelX = radarCenterX + (radarRadius + 20) * Math.cos(angle);
-        const labelY = radarCenterY + (radarRadius + 20) * Math.sin(angle);
+        // Aumentar distância dos labels do centro (de 20 para 25px)
+        const labelX = radarCenterX + (radarRadius + 25) * Math.cos(angle);
+        const labelY = radarCenterY + (radarRadius + 25) * Math.sin(angle);
         ctx.fillText(labels[i], labelX, labelY);
       }
       
@@ -575,65 +631,108 @@ class ImageGenerator {
       ctx.stroke();
       
       // Título "Stat Distribution" abaixo do radar (dentro do container roxo)
+      // Usar o mesmo titleBottomSpacing definido acima
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 24px "Exo 2", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Stat Distribution', x + width / 2, radarY + radarHeight - 10);
+      ctx.fillText('Stat Distribution', x + width / 2, radarY + radarHeight - titleBottomSpacing);
       
       ctx.textAlign = 'left';
       
       // Estatísticas Gerais (Inferior) - h-32 = 128px, text-2xl = 24px, text-lg = 18px
+      // No preview: container externo bg-purple-700 rounded-2xl p-4 h-32
       const genStatsY = radarY + radarHeight + gap;
-      const genStatsHeight = genStatsHeightValue; // h-32 (já declarado acima)
+      const genStatsHeight = genStatsHeightValue; // h-32 = 128px
       
       // Verificar se não extrapola a altura disponível
       const maxY = y + height;
       if (genStatsY + genStatsHeight > maxY) {
         console.warn(`⚠️ Estatísticas gerais extrapolam: ${genStatsY + genStatsHeight} > ${maxY}`);
         // Ajustar para não extrapolar
-        const adjustedGenStatsY = maxY - genStatsHeight - padding;
+        const adjustedGenStatsY = maxY - genStatsHeight;
         if (adjustedGenStatsY > radarY + radarHeight) {
           // Recalcular altura do radar se necessário
           const newRadarHeight = adjustedGenStatsY - radarY - gap;
           if (newRadarHeight > 100) {
             // Redesenhar container do radar com nova altura
             ctx.fillStyle = '#7c3aed';
-            this.roundRect(x + padding, radarY, width - (padding * 2), newRadarHeight, 16);
+            this.roundRect(x, radarY, width, newRadarHeight, 16);
             ctx.fill();
           }
         }
       }
       
-      const generalStats = this.statsCalculator ? this.statsCalculator.calculateGeneralStats(matchData) : {};
+      // Container externo roxo (bg-purple-700 rounded-2xl p-4 h-32)
+      // No preview: p-4 = 16px padding interno
+      const genStatsContainerPadding = 16; // p-4
+      ctx.fillStyle = '#7c3aed';
+      this.roundRect(x, genStatsY, width, genStatsHeight, 16);
+      ctx.fill();
       
+      // Mudança: agora são 4 estatísticas (Score, Knockouts, Assists, Interrupts) ao invés de 3
       const genStats = [
-        { label: 'KO / Min', value: generalStats.koPerMin || '0' },
-        { label: '(KO+A)', value: generalStats.koAssistRatio || 0 },
-        { label: 'AVG EXP/min', value: generalStats.avgExpPerMin || 0 },
+        { label: 'Score', value: mainPlayer.playerScore || 0 },
+        { label: 'Knockouts', value: mainPlayer.kills || 0 },
+        { label: 'Assists', value: mainPlayer.assists || 0 },
+        { label: 'Interrupts', value: mainPlayer.interrupts || 0 },
       ];
       
-      const genStatWidth = (width - padding * 2 - gap * 2) / 3;
+      // No preview: gap-3 = 12px entre colunas, border-4 = 4px border branca
+      // Cada caixa: bg-purple-700 rounded-2xl px-2 py-2 border-4
+      // Container interno: flex flex-row gap-3 w-full h-full
+      const genStatsGap = 12; // gap-3 entre as caixas
+      const genStatsBorder = 4; // border-4 = borda branca de 4px
+      
+      // Calcular largura de cada coluna considerando gap entre elas
+      // Mudança: agora são 4 colunas ao invés de 3
+      const genStatsContentWidth = width - (genStatsContainerPadding * 2);
+      const genStatWidth = (genStatsContentWidth - (genStatsGap * 3)) / 4; // Mudado de 3 para 4 colunas
+      const genStatsStartX = x + genStatsContainerPadding;
+      
+      // Altura das caixas internas: altura total do container - padding do container externo * 2
+      const genStatsInnerHeight = genStatsHeight - (genStatsContainerPadding * 2);
       
       genStats.forEach((stat, i) => {
-        const statX = x + padding + (genStatWidth + gap) * i + genStatWidth / 2;
+        const statBoxX = genStatsStartX + (genStatWidth + genStatsGap) * i;
+        const statX = statBoxX + genStatWidth / 2;
+        const statBoxY = genStatsY + genStatsContainerPadding;
         
+        // Caixa individual com fundo roxo (bg-purple-700 rounded-2xl px-2 py-2 border-4)
         ctx.fillStyle = '#7c3aed';
-        this.roundRect(x + padding + (genStatWidth + gap) * i, genStatsY, genStatWidth, genStatsHeight, 16);
+        this.roundRect(statBoxX, statBoxY, genStatWidth, genStatsInnerHeight, 16);
         ctx.fill();
         
-        // Borda
-        ctx.strokeStyle = '#a78bfa';
-        ctx.lineWidth = 4;
-        this.roundRect(x + padding + (genStatWidth + gap) * i, genStatsY, genStatWidth, genStatsHeight, 16);
+        // Borda branca (border-4) - desenhar POR CIMA do fundo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = genStatsBorder;
+        this.roundRect(statBoxX, statBoxY, genStatWidth, genStatsInnerHeight, 16);
         ctx.stroke();
         
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px "Exo 2", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(stat.label, statX, genStatsY + 40);
         
-        ctx.font = 'bold 24px "Exo 2", sans-serif';
-        ctx.fillText(String(stat.value), statX, genStatsY + 75);
+        // Usar o mesmo estilo das estatísticas pessoais
+        // Tamanho da fonte do número: 36px (bold)
+        // Tamanho da fonte da legenda: 18px
+        // Espaçamento entre número e legenda: 8px
+        const valueFontSize = 36; // Mesmo tamanho das estatísticas pessoais
+        const labelFontSize = 18; // Mesmo tamanho das estatísticas pessoais
+        const gapBetweenValueAndLabel = 8; // Mesmo espaçamento das estatísticas pessoais
+        
+        // Calcular altura total do conteúdo
+        const contentHeight = valueFontSize + gapBetweenValueAndLabel + labelFontSize;
+        // Padding top para centralizar: (genStatsInnerHeight - contentHeight) / 2
+        const paddingTop = (genStatsInnerHeight - contentHeight) / 2;
+        
+        // Desenhar número primeiro (maior, em cima) - mesmo estilo das estatísticas pessoais
+        ctx.font = `bold ${valueFontSize}px "Exo 2", sans-serif`;
+        const valueY = statBoxY + paddingTop + valueFontSize;
+        ctx.fillText(String(stat.value), statX, valueY);
+        
+        // Desenhar label abaixo (menor, embaixo) - mesmo estilo das estatísticas pessoais
+        ctx.font = `${labelFontSize}px "Exo 2", sans-serif`; // Sem bold na legenda (igual às pessoais)
+        const labelY = statBoxY + paddingTop + valueFontSize + gapBetweenValueAndLabel + labelFontSize;
+        ctx.fillText(stat.label, statX, labelY);
       });
       
       ctx.textAlign = 'left';
@@ -697,12 +796,12 @@ class ImageGenerator {
         throw new Error('Dados da partida inválidos');
       }
       
-      // Inicializar canvas
-      this.initCanvas(1400, 900);
+      // Inicializar canvas (1440x905: +20px largura, -5px altura)
+      this.initCanvas(1400, 905);
       
       // Background principal (branco)
       this.ctx.fillStyle = '#ffffff';
-      this.ctx.fillRect(0, 0, 1400, 900);
+      this.ctx.fillRect(0, 0, 1400, 905);
       
       // Encontrar jogador principal de forma segura
       let allPlayers = [];
@@ -744,24 +843,44 @@ class ImageGenerator {
       
       console.log('✅ Jogador principal encontrado:', mainPlayer.playerName);
       
-      // Obter foto do usuário
+      // Obter foto do usuário (prioridade 1) ou avatar do UniteAPI (prioridade 2)
       let userPhoto = null;
       if (this.photoUpload && typeof this.photoUpload.getPhoto === 'function') {
         try {
           userPhoto = await this.photoUpload.getPhoto();
+          
+          // Se não houver foto do usuário, tentar obter avatar do UniteAPI
+          if (!userPhoto && typeof this.photoUpload.getAvatar === 'function') {
+            try {
+              userPhoto = await this.photoUpload.getAvatar();
+              if (userPhoto) {
+                console.log('✅ Usando avatar do UniteAPI como fallback');
+              }
+            } catch (err) {
+              console.warn('⚠️ Erro ao obter avatar do UniteAPI:', err);
+            }
+          }
         } catch (err) {
           console.warn('⚠️ Erro ao obter foto do usuário:', err);
         }
       }
       
-      // Desenhar seções (layout de 2 colunas: esquerda 5/12, centro 7/12)
-      // No preview: p-4 = 16px, gap-4 = 16px
+      // Desenhar seções (layout de 2 colunas conforme preview)
+      // Preview: flex flex-row p-4 gap-5
+      // ATUALIZADO: Diminuir seção esquerda em 50%
       const padding = 16; // p-4
-      const gap = 16; // gap-4
-      const totalWidth = 1400 - (padding * 2);
-      const leftWidth = (totalWidth / 12) * 5; // 5/12 da largura
-      const centerWidth = (totalWidth / 12) * 7; // 7/12 da largura
-      const totalHeight = 900 - (padding * 2); // Altura total disponível
+      const paddingRight = 16; // Padding direito adicional (para canvas 1440)
+      const gap = 20; // gap-5
+      
+      // Calcular baseado no preview de 1400px
+      const previewTotalWidth = 1400 - (padding * 2); // 1368px
+      const originalLeftWidth = (previewTotalWidth * 2) / 3; // 912px (w-2/3 original)
+      
+      // Diminuir 50% da largura da seção esquerda
+      const leftWidth = originalLeftWidth * 0.7; // 456px (50% de 912px)
+      const centerWidth = previewTotalWidth - gap - leftWidth; // 892px (espaço restante)
+      
+      const totalHeight = 905 - (padding * 2);
       
       console.log('🎨 Desenhando seção do jogador...');
       await this.drawPlayerSection(padding, padding, leftWidth, totalHeight, mainPlayer, userPhoto);
