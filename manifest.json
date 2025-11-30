@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Unite Match Stats Generator",
   "version": "1.0",
-  "description": "Gera imagens visuais de estatísticas das partidas do Pokémon Unite a partir do UniteAPI.dev. Cria imagens personalizadas com estatísticas detalhadas, gráficos e informações dos jogadores.",
+  "description": "Gera imagens visuais de estatísticas das partidas do Pokémon Unite com gráficos e informações detalhadas dos jogadores.",
   "permissions": ["activeTab", "scripting", "storage", "tabs", "contextMenus"],
   "host_permissions": ["https://uniteapi.dev/*"],
   "action": {

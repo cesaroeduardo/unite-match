@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidade - Unite Match Stats Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        .last-updated {
+            color: #777;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Política de Privacidade</h1>
+    <p class="last-updated">Última atualização: <span id="date"></span></p>
+    
+    <h2>1. Informações Coletadas</h2>
+    <p>A extensão <strong>Unite Match Stats Generator</strong> coleta e armazena apenas as seguintes informações:</p>
+    <ul>
+        <li><strong>Foto do usuário (opcional):</strong> Se você optar por fazer upload de uma foto pessoal, ela será armazenada localmente no seu navegador usando Chrome Storage API. Esta foto é usada exclusivamente para personalizar as imagens de estatísticas geradas.</li>
+        <li><strong>Conteúdo da página:</strong> A extensão acessa o conteúdo público da página do UniteAPI.dev para extrair dados de partidas que já estão visíveis na tela. Esses dados são processados localmente e não são armazenados permanentemente.</li>
+    </ul>
+    
+    <h2>2. Como Usamos as Informações</h2>
+    <p>Todas as informações coletadas são usadas exclusivamente para:</p>
+    <ul>
+        <li>Gerar imagens de estatísticas das partidas do Pokémon Unite</li>
+        <li>Personalizar as imagens com a foto do usuário (quando fornecida)</li>
+        <li>Processar dados localmente no navegador para criar as visualizações</li>
+    </ul>
+    
+    <h2>3. Armazenamento de Dados</h2>
+    <p>Todos os dados são armazenados localmente no seu navegador:</p>
+    <ul>
+        <li>A foto do usuário (se fornecida) é armazenada usando Chrome Storage API local</li>
+        <li>Nenhum dado é enviado para servidores externos</li>
+        <li>Nenhum dado é compartilhado com terceiros</li>
+        <li>Você pode remover seus dados a qualquer momento limpando os dados da extensão ou desinstalando-a</li>
+    </ul>
+    
+    <h2>4. Compartilhamento de Dados</h2>
+    <p>A extensão <strong>NÃO</strong>:</p>
+    <ul>
+        <li>Vende ou transfere dados para terceiros</li>
+        <li>Envia dados para servidores externos</li>
+        <li>Compartilha informações com outras empresas ou serviços</li>
+        <li>Usa dados para publicidade ou marketing</li>
+        <li>Usa dados para análise de crédito ou empréstimos</li>
+    </ul>
+    
+    <h2>5. Permissões da Extensão</h2>
+    <p>A extensão solicita as seguintes permissões:</p>
+    <ul>
+        <li><strong>activeTab:</strong> Para acessar a aba ativa quando você clica no ícone da extensão</li>
+        <li><strong>scripting:</strong> Para injetar scripts na página do UniteAPI.dev e processar dados</li>
+        <li><strong>storage:</strong> Para armazenar localmente a foto do usuário (opcional)</li>
+        <li><strong>tabs:</strong> Para comunicação interna entre componentes da extensão</li>
+        <li><strong>contextMenus:</strong> Para criar item no menu de contexto (clique direito)</li>
+        <li><strong>https://uniteapi.dev/*:</strong> Para acessar conteúdo do site UniteAPI.dev onde os dados das partidas estão disponíveis</li>
+    </ul>
+    
+    <h2>6. Segurança</h2>
+    <p>Implementamos as seguintes medidas de segurança:</p>
+    <ul>
+        <li>Todos os dados permanecem no seu dispositivo</li>
+        <li>Nenhuma comunicação com servidores externos</li>
+        <li>Processamento local de todas as informações</li>
+        <li>Armazenamento seguro usando APIs nativas do Chrome</li>
+    </ul>
+    
+    <h2>7. Seus Direitos</h2>
+    <p>Você tem o direito de:</p>
+    <ul>
+        <li>Acessar os dados armazenados pela extensão</li>
+        <li>Remover seus dados a qualquer momento</li>
+        <li>Desinstalar a extensão, o que remove todos os dados armazenados</li>
+        <li>Optar por não fazer upload de foto pessoal</li>
+    </ul>
+    
+    <h2>8. Alterações nesta Política</h2>
+    <p>Podemos atualizar esta política de privacidade ocasionalmente. A data da última atualização será sempre indicada no topo desta página. Recomendamos que você revise esta política periodicamente.</p>
+    
+    <h2>9. Contato</h2>
+    <p>Se você tiver dúvidas sobre esta política de privacidade, entre em contato através do repositório do projeto ou dos canais de suporte disponíveis.</p>
+    
+    <hr>
+    <p><small>Esta política de privacidade se aplica exclusivamente à extensão Unite Match Stats Generator e não se aplica a sites de terceiros, incluindo o UniteAPI.dev.</small></p>
+</body>
+<script>
+    document.getElementById('date').textContent = new Date().toLocaleDateString('pt-BR');
+</script>
+</html>
