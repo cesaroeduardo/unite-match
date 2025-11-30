@@ -342,7 +342,8 @@ class ImageGenerator {
     
     // Pokémon Imagem (abaixo da foto/items) - ocupa o espaço restante com overflow hidden
     const pokemonY = currentY + photoHeight + gap;
-    let pokemonImagePath = `/public/pokemons/stat-${(mainPlayer.pokemon || 'unknown').toLowerCase().replace(/\s+/g, '-')}.png`;
+    // Fallback inicial - será substituído se pokemonData estiver disponível
+    let pokemonImagePath = `/pokemons/stat-unknown.png`;
     
     if (this.pokemonData && typeof this.pokemonData.getPokemonImagePath === 'function') {
       try {
@@ -350,7 +351,14 @@ class ImageGenerator {
         if (customPath) pokemonImagePath = customPath;
       } catch (err) {
         console.warn('⚠️ Erro ao obter caminho do pokemon:', err);
+        // Fallback: usar PokemonMapper diretamente se disponível
+        if (typeof window !== 'undefined' && window.PokemonMapper) {
+          pokemonImagePath = window.PokemonMapper.getPokemonImagePath(mainPlayer.pokemon, 'stat');
+        }
       }
+    } else if (typeof window !== 'undefined' && window.PokemonMapper) {
+      // Se pokemonData não estiver disponível, usar PokemonMapper diretamente
+      pokemonImagePath = window.PokemonMapper.getPokemonImagePath(mainPlayer.pokemon, 'stat');
     }
     
     // Container do Pokémon - altura calculada baseada no espaço restante

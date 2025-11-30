@@ -75,18 +75,35 @@ class PokemonData {
   getPokemonByName(name) {
     if (!name) return null;
     
-    // Tentar busca exata primeiro
-    let pokemon = this.pokemonsByName.get(name);
+    // Primeiro, aplicar mapeamento de nomes se PokemonMapper estiver disponível
+    let mappedName = name;
+    if (typeof window !== 'undefined' && window.PokemonMapper) {
+      mappedName = window.PokemonMapper.mapPokemonName(name);
+    }
+    
+    // Tentar busca exata primeiro (com nome mapeado)
+    let pokemon = this.pokemonsByName.get(mappedName);
+    if (pokemon) return pokemon;
+    
+    // Tentar busca exata com nome original também
+    pokemon = this.pokemonsByName.get(name);
     if (pokemon) return pokemon;
     
     // Tentar busca normalizada
-    const normalized = this.normalizeName(name);
+    const normalized = this.normalizeName(mappedName);
     pokemon = this.pokemonsByNormalizedName.get(normalized);
     if (pokemon) return pokemon;
     
     // Tentar variações
-    const variations = this.getPokemonNameVariations(name);
+    const variations = this.getPokemonNameVariations(mappedName);
     for (const variation of variations) {
+      pokemon = this.pokemonsByNormalizedName.get(variation);
+      if (pokemon) return pokemon;
+    }
+    
+    // Tentar variações do nome original também
+    const originalVariations = this.getPokemonNameVariations(name);
+    for (const variation of originalVariations) {
       pokemon = this.pokemonsByNormalizedName.get(variation);
       if (pokemon) return pokemon;
     }
@@ -97,7 +114,18 @@ class PokemonData {
   getPokemonImagePath(pokemonName, imageType = 'complete') {
     const pokemon = this.getPokemonByName(pokemonName);
     if (!pokemon || !pokemon.images) {
-      // Fallback: gerar caminho baseado no nome
+      // Fallback: usar PokemonMapper se disponível para mapear nome de imagem
+      if (typeof window !== 'undefined' && window.PokemonMapper) {
+        const mappedImageName = window.PokemonMapper.mapPokemonImageName(pokemonName);
+        const imagePaths = {
+          'main': `/pokemons/roster-${mappedImageName}.png`,
+          'big': `/pokemons/roster-${mappedImageName}-2x.png`,
+          'complete': `/pokemons/stat-${mappedImageName}.png`,
+        };
+        return imagePaths[imageType] || imagePaths.complete;
+      }
+      
+      // Fallback antigo: gerar caminho baseado no nome
       const fileName = (pokemonName || 'unknown').toLowerCase().replace(/\s+/g, '-');
       const imagePaths = {
         'main': `/pokemons/roster-${fileName}.png`,
@@ -126,11 +154,16 @@ class PokemonData {
       }
     }
     
-    // Fallback: gerar caminho baseado no nome do pokemon e código da habilidade
-    // Normalizar nome do pokemon (ex: "Mr. Mime" -> "mr-mime")
-    const fileName = (pokemonName || 'unknown').toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-');
+    // Fallback: usar PokemonMapper se disponível para mapear nome de imagem
+    let fileName;
+    if (typeof window !== 'undefined' && window.PokemonMapper) {
+      fileName = window.PokemonMapper.mapPokemonImageName(pokemonName);
+    } else {
+      // Fallback antigo: normalizar nome do pokemon (ex: "Mr. Mime" -> "mr-mime")
+      fileName = (pokemonName || 'unknown').toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-');
+    }
     
     return `/pokemons/moves/${fileName}_${abilityCode}.png`;
   }
@@ -165,6 +198,11 @@ class PokemonData {
 
   // Métodos de compatibilidade (para manter API antiga)
   normalizePokemonName(name) {
+    // Usar PokemonMapper se disponível
+    if (typeof window !== 'undefined' && window.PokemonMapper) {
+      return window.PokemonMapper.normalizePokemonName(name);
+    }
+    
     const pokemon = this.getPokemonByName(name);
     return pokemon ? pokemon.name : (name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : null);
   }

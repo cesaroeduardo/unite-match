@@ -1061,7 +1061,14 @@ class MatchDataExtractor {
       const img = cell.querySelector('img[alt*="pokemon"]');
       if (img && img.src) {
         const match = img.src.match(/t_Square_([^.]+)\.png/);
-        return match ? match[1].toLowerCase() : 'unknown';
+        if (match) {
+          const extractedName = match[1].toLowerCase();
+          // Aplicar mapeamento se PokemonMapper estiver disponível
+          if (typeof window !== 'undefined' && window.PokemonMapper) {
+            return window.PokemonMapper.mapPokemonName(extractedName);
+          }
+          return extractedName;
+        }
       }
       return 'unknown';
     } catch (error) {
