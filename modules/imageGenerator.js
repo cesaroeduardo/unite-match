@@ -256,14 +256,14 @@ class ImageGenerator {
       const ability1Url = typeof ability1 === 'object' ? ability1.url : null;
       
       ctx.fillStyle = '#f97316';
-      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 16);
+      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 10);
       ctx.fill();
       
       if (ability1Url) {
         const abilityImg = await this.loadImage(ability1Url);
         if (abilityImg) {
           // Desenhar imagem quadrada centralizada
-          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20);
+          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20) - 12;
           const imgX = abilitiesColX + (abilitiesColWidth - imgSize) / 2;
           const imgY = itemY + (itemHeight - imgSize) / 2;
           ctx.drawImage(abilityImg, imgX, imgY, imgSize, imgSize);
@@ -272,7 +272,7 @@ class ImageGenerator {
       itemY += itemHeight + itemGap;
     } else {
       ctx.fillStyle = '#f97316';
-      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 16);
+      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 10);
       ctx.fill();
       itemY += itemHeight + itemGap;
     }
@@ -283,14 +283,14 @@ class ImageGenerator {
       const ability2Url = typeof ability2 === 'object' ? ability2.url : null;
       
       ctx.fillStyle = '#f97316';
-      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 16);
+      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 10);
       ctx.fill();
       
       if (ability2Url) {
         const abilityImg = await this.loadImage(ability2Url);
         if (abilityImg) {
           // Desenhar imagem quadrada centralizada
-          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20);
+          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20) - 12;
           const imgX = abilitiesColX + (abilitiesColWidth - imgSize) / 2;
           const imgY = itemY + (itemHeight - imgSize) / 2;
           ctx.drawImage(abilityImg, imgX, imgY, imgSize, imgSize);
@@ -299,7 +299,7 @@ class ImageGenerator {
       itemY += itemHeight + itemGap;
     } else {
       ctx.fillStyle = '#f97316';
-      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 16);
+      this.roundRect(abilitiesColX, itemY, abilitiesColWidth, itemHeight, 10);
       ctx.fill();
       itemY += itemHeight + itemGap;
     }
@@ -328,7 +328,7 @@ class ImageGenerator {
         const battleItemImg = await this.loadImage(battleItemUrl);
         if (battleItemImg) {
           // Desenhar imagem quadrada centralizada
-          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20);
+          const imgSize = Math.min(abilitiesColWidth - 20, itemHeight - 20) - 6;
           const imgX = abilitiesColX + (abilitiesColWidth - imgSize) / 2;
           const imgY = itemY + (itemHeight - imgSize) / 2;
           ctx.drawImage(battleItemImg, imgX, imgY, imgSize, imgSize);
@@ -575,7 +575,7 @@ class ImageGenerator {
       for (let i = 1; i <= 5; i++) {
         ctx.beginPath();
         ctx.arc(radarCenterX, radarCenterY, (radarRadius / 5) * i, 0, 2 * Math.PI);
-        ctx.strokeStyle = 'rgba(167, 139, 250, 0.2)';
+        ctx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -593,7 +593,7 @@ class ImageGenerator {
         radarStats.assists || 50,
       ];
       
-      ctx.strokeStyle = 'rgba(167, 139, 250, 0.3)';
+      ctx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
       ctx.lineWidth = 1;
       ctx.fillStyle = '#e9d5ff';
       // Aumentar tamanho da fonte dos labels (de 10px para 14px para melhor legibilidade)
