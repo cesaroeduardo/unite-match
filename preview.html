@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview - Unite Match Stats</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@100;200;300;400;500;600;700;800;900&display=swap');
+    
+    * {
+      font-family: 'Exo 2', sans-serif;
+    }
+    
+    body { 
+      margin: 0;
+      padding: 20px;
+      background: #1a1a1a;
+    }
+    
+    /* Área de visualização com dimensões exatas */
+    #preview-container {
+      width: 1400px;
+      height: 900px;
+      margin: 0 auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      background: #fff;
+    }
+    
+    /* Painel de controle */
+    #control-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-width: 300px;
+      font-family: 'Exo 2', sans-serif;
+    }
+    
+    #control-panel button {
+      width: 100%;
+      padding: 8px 16px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 600;
+    }
+    
+    .btn-primary {
+      background: #ea580c;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #9333ea;
+      color: white;
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Painel de Controle -->
+  <div id="control-panel">
+    <h3 class="text-lg font-bold mb-3">Controles</h3>
+    <button class="btn-primary" onclick="randomizeData()">🎲 Dados Aleatórios</button>
+    <button class="btn-secondary" onclick="togglePlayerPhoto()">📸 Toggle Foto</button>
+    <button class="btn-success" onclick="exportToCanvas()">💾 Exportar PNG</button>
+    <hr class="my-3">
+    <p class="text-xs text-gray-600">
+      Edite o HTML diretamente e recarregue a página para ver as mudanças.
+    </p>
+  </div>
+
+  <!-- Container de Preview (1400x900) -->
+  <div id="preview-container" class="text-white">
+    <div class="w-full h-full p-0">
+      
+      <!-- Grid Principal -->
+      <div class="grid grid-cols-12 flex-row h-full p-4 gap-4">
+        
+        <!-- ========== SEÇÃO ESQUERDA - JOGADOR (LARANJA) ========== -->
+        <div class="flex flex-col rounded-lg gap-5 col-span-5">
+          
+          <!-- Barra do Nome do Jogador (Topo) -->
+          <div class="bg-orange-600 rounded-xl px-6 h-16 items-center justify-center flex">
+            <h2 class="text-3xl font-bold text-center" id="player-name">Regi</h2>
+          </div>
+          
+          <!-- Foto do Jogador e Info -->
+          <div class="flex flex-row gap-5">
+
+            <!-- Coluna da esquerda -->
+            <div class="flex flex-col gap-3">
+                <!-- Foto Quadrada -->
+                <div class="w-72 h-[280px] bg-orange-600 rounded-2xl overflow-hidden flex-shrink-0">
+                <img src="https://via.placeholder.com/96" alt="Player" class="w-full h-full object-cover" id="player-photo">
+                </div>
+            </div>
+
+            <!-- Coluna da direita -->
+            <div class="flex flex-col gap-3 w-full">
+                <!-- Time e Região -->
+                <!-- <div class="flex flex-col gap-2 flex-1">
+                <div class="bg-orange-400 bg-opacity-80 rounded px-3 py-1.5 border-2 border-orange-300">
+                    <p class="text-xs font-semibold" id="team-name">CACM Esports</p>
+                </div>
+                <div class="bg-orange-400 bg-opacity-80 rounded px-3 py-1.5 border-2 border-orange-300">
+                    <p class="text-xs font-semibold" id="region-name">LA-N</p>
+                </div>
+                </div> -->
+
+                <!-- Habilidades e Itens -->
+                <div class="flex flex-row gap-2 w-full">
+                    <div class="flex flex-col gap-5 w-full">
+                        <!-- Abilities -->
+                        <div class="w-full bg-orange-400 rounded-2xl flex items-center justify-center overflow-hidden h-20" id="ability-1">
+                            <img src="public/pokemons/moves/darkrai_s21.png" alt="Ability 1" class="w-full h-full object-contain p-2">
+                        </div>
+                        <div class="w-full bg-orange-400 rounded-2xl flex items-center justify-center overflow-hidden h-20" id="ability-2">
+                            <img src="public/pokemons/moves/darkrai_s22.png" alt="Ability 2" class="w-full h-full object-contain p-2">
+                        </div>
+                        <!-- Battle Items -->
+                        <div class="w-full bg-orange-400 rounded-2xl flex items-center justify-center overflow-hidden h-20" id="battle-item">
+                            <img src="public/battle-items/shedinjadoll.png" alt="Battle Item" class="w-full h-full object-contain p-2">
+                        </div>
+                    </div>
+                    <!-- Held Items -->
+                    <!-- <div class="flex flex-col gap-2 w-full">
+                        <div class="w-full h-20 bg-orange-400 rounded-2xl flex items-center justify-center text-xs" id="item-1">-</div>
+                        <div class="w-full h-20 bg-orange-400 rounded-2xl flex items-center justify-center text-xs" id="item-2">-</div>
+                        <div class="w-full h-20 bg-orange-400 rounded-2xl flex items-center justify-center text-xs" id="item-3">-</div>
+                    </div> -->
+                </div>
+            </div>
+        
+          </div>
+
+        <!-- Pokémon Imagem -->
+        <div class="flex items-center justify-center gap-5 bg-orange-400 rounded-2xl h-48 overflow-hidden">
+            <img src="public/pokemons/stat-darkrai.png" alt="Pokemon" id="pokemon-img" class="w-60 h-60 object-contain">
+        </div>
+          
+          <!-- Estatísticas Pessoais (2 Linhas) -->
+          <div class="flex flex-col gap-5 rounded-2xl h-auto">
+            <!-- Primeira Linha -->
+            <div class="grid grid-cols-4 gap-5 bg-orange-400 p-4 rounded-2xl text-center h-32 items-center justify-center">
+              <div class="rounded px-2 py-1.5 flex flex-col gap-1 items-center justify-center">
+                <p class="text-4xl font-bold" id="stat-score">143</p>
+                <p class="text-lg font-medium">Score</p>
+              </div>
+              <div class="bg-orange-400 bg-opacity-60 rounded px-2 py-1.5 flex flex-col gap-1 items-center justify-center">
+                <p class="text-4xl font-bold" id="stat-ko">10</p>
+                <p class="text-lg font-medium">Knockouts</p>
+              </div>
+              <div class="bg-orange-400 bg-opacity-60 rounded px-2 py-1.5 flex flex-col gap-1 items-center justify-center">
+                <p class="text-4xl font-bold" id="stat-assists">8</p>
+                <p class="text-lg font-medium">Assists</p>
+              </div>
+              <div class="bg-orange-400 bg-opacity-60 rounded px-2 py-1.5 flex flex-col gap-1 items-center justify-center">
+                <p class="text-4xl font-bold" id="stat-interrupts">5</p>
+                <p class="text-lg font-medium">Interrupts</p>
+              </div>
+            </div>
+            
+            <!-- Segunda Linha -->
+            <div class="grid grid-cols-3 gap-5 bg-orange-400 p-4 rounded-2xl text-center h-32 items-center justify-center">
+                <div class="flex flex-col gap-1 items-center justify-center">
+                    <p class="text-4xl font-bold" id="stat-damage-dealt">59475</p>
+                    <p class="text-lg font-medium">Damage Dealt</p>
+                </div>
+                <div class="flex flex-col gap-1 items-center justify-center">
+                    <p class="text-4xl font-bold" id="stat-damage-taken">27813</p>
+                    <p class="text-lg font-medium">Damage Taken</p>
+                </div>
+                <div class="flex flex-col gap-1 items-center justify-center">
+                    <p class="text-4xl font-bold" id="stat-recovery">8908</p>
+                    <p class="text-lg font-medium">Recovery</p>
+                </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ========== SEÇÃO CENTRAL (ROXO) ========== -->
+        <div class="flex flex-col gap-5 col-span-7">
+          
+          <!-- Placar da Partida (Topo) -->
+          <div class="">
+            <div class="flex items-center gap-5">
+              <div class="flex flex-col gap-5 w-full text-center">
+                <p class="text-3xl bg-purple-700 rounded-2xl p-4 font-bold h-16 items-center justify-center flex" id="team-1-name">Purple Team</p>
+                <div class="flex gap-2 bg-purple-700 rounded-2xl p-4 items-center justify-center h-20">
+                  <p class="text-2xl font-bold text-center w-full">Score: <span id="team-1-score">315</span></p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-5 w-full text-center">
+                <p class="text-3xl bg-orange-600 rounded-2xl p-4 font-bold h-16 items-center justify-center flex" id="team-2-name">Orange Team</p>
+                <div class="flex items-center gap-2 bg-orange-400 rounded-2xl p-4 items-center justify-center h-20">
+                  <p class="text-2xl font-bold text-center w-full">Score: <span id="team-2-score">504</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Gráfico Radar SVG -->
+          <div class="flex flex-col items-center justify-end bg-purple-700 rounded-2xl h-full">
+            <svg viewBox="0 0 200 200" class="w-full pt-14 h-full max-w-xs overflow-visible h-full">
+              <!-- Círculos de fundo -->
+              <circle cx="100" cy="100" r="16" fill="none" stroke="rgba(167, 139, 250, 0.2)" stroke-width="1"/>
+              <circle cx="100" cy="100" r="32" fill="none" stroke="rgba(167, 139, 250, 0.2)" stroke-width="1"/>
+              <circle cx="100" cy="100" r="48" fill="none" stroke="rgba(167, 139, 250, 0.2)" stroke-width="1"/>
+              <circle cx="100" cy="100" r="64" fill="none" stroke="rgba(167, 139, 250, 0.2)" stroke-width="1"/>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(167, 139, 250, 0.2)" stroke-width="1"/>
+              
+              <!-- Eixos -->
+              <g id="radar-axes">
+                <!-- Interrupts (topo) -->
+                <line x1="100" y1="100" x2="100" y2="20" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="100" y="15" text-anchor="middle" fill="#e9d5ff" font-size="9" font-weight="600">Interrupts</text>
+                
+                <!-- Knockouts (direita superior) -->
+                <line x1="100" y1="100" x2="169" y2="60" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="177" y="60" text-anchor="start" fill="#e9d5ff" font-size="9" font-weight="600">Knockouts</text>
+                
+                <!-- Damage Taken (direita inferior) -->
+                <line x1="100" y1="100" x2="169" y2="140" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="177" y="145" text-anchor="start" fill="#e9d5ff" font-size="9" font-weight="600">Damage Taken</text>
+                
+                <!-- Damage Dealt (baixo) -->
+                <line x1="100" y1="100" x2="100" y2="180" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="100" y="195" text-anchor="middle" fill="#e9d5ff" font-size="9" font-weight="600">Damage Dealt</text>
+                
+                <!-- Scoring (esquerda inferior) -->
+                <line x1="100" y1="100" x2="31" y2="140" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="23" y="145" text-anchor="end" fill="#e9d5ff" font-size="9" font-weight="600">Scoring</text>
+                
+                <!-- Assists (esquerda superior) -->
+                <line x1="100" y1="100" x2="31" y2="60" stroke="rgba(167, 139, 250, 0.3)" stroke-width="1"/>
+                <text x="23" y="60" text-anchor="end" fill="#e9d5ff" font-size="9" font-weight="600">Assists</text>
+              </g>
+              
+              <!-- Polígono de dados -->
+              <polygon id="radar-polygon" 
+                points="100,36 153,52 161,116 100,164 39,116 47,52" 
+                fill="rgba(167, 139, 250, 0.5)" 
+                stroke="#a78bfa" 
+                stroke-width="2"/>
+                
+              <!-- Pontos nos vértices -->
+              <circle cx="100" cy="36" r="3" fill="#c4b5fd"/>
+              <circle cx="153" cy="52" r="3" fill="#c4b5fd"/>
+              <circle cx="161" cy="116" r="3" fill="#c4b5fd"/>
+              <circle cx="100" cy="164" r="3" fill="#c4b5fd"/>
+              <circle cx="39" cy="116" r="3" fill="#c4b5fd"/>
+              <circle cx="47" cy="52" r="3" fill="#c4b5fd"/>
+            </svg>
+            <div class="w-full h-1 pb-14 overflow-visible text-center text-2xl font-bold">Stat Distribution</div>
+          </div>
+          
+          <!-- Estatísticas Gerais (Inferior) -->
+          <div class="bg-purple-700 rounded-2xl p-4 h-32 items-center justify-center flex">
+            <div class="flex flex-row gap-3 w-full h-full items-center justify-center">
+              <div class="bg-purple-700 rounded-2xl px-2 py-2 border-4 text-center w-full h-full items-center justify-center flex flex-col gap-1">
+                <p class="text-lg font-bold">KO / Min</p>
+                <p class="text-2xl font-bold" id="gen-ko-min">1</p>
+              </div>
+              <div class="bg-purple-700 rounded-2xl px-2 py-2 border-4 text-center w-full h-full items-center justify-center flex flex-col">
+                <p class="text-lg font-bold">(KO+A)</p>
+                <p class="text-2xl font-bold" id="gen-ko-a">18</p>
+              </div>
+              <div class="bg-purple-700 rounded-2xl px-2 py-2 border-4 text-center w-full h-full items-center justify-center flex flex-col">
+                <p class="text-lg font-bold">AVG EXP/min</p>
+                <p class="text-2xl font-bold" id="gen-exp-min">1485</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lista de pokemons disponíveis para randomização
+    const pokemons = [
+      { name: 'darkrai', displayName: 'Darkrai' },
+      { name: 'scizor', displayName: 'Scizor' },
+      { name: 'charizard', displayName: 'Charizard' },
+      { name: 'pikachu', displayName: 'Pikachu' },
+      { name: 'lucario', displayName: 'Lucario' },
+      { name: 'greninja', displayName: 'Greninja' },
+      { name: 'garchomp', displayName: 'Garchomp' },
+      { name: 'machamp', displayName: 'Machamp' },
+      { name: 'tyranitar', displayName: 'Tyranitar' },
+      { name: 'blastoise', displayName: 'Blastoise' },
+      { name: 'venusaur', displayName: 'Venusaur' },
+      { name: 'gengar', displayName: 'Gengar' },
+    ];
+    
+    // Lista de battle items disponíveis
+    const battleItems = [
+      'shedinjadoll',
+      'ejectbutton',
+      'xspeed',
+      'xattack',
+      'potion',
+      'purify',
+      'smoke',
+      'tail',
+      'gear',
+      'ganrao',
+      'Controller'
+    ];
+    
+    // Função para randomizar dados
+    function randomizeData() {
+      // Randomizar pokemon
+      const randomPokemon = pokemons[Math.floor(Math.random() * pokemons.length)];
+      document.getElementById('pokemon-img').src = `public/pokemons/stat-${randomPokemon.name}.png`;
+      document.getElementById('pokemon-img').alt = randomPokemon.displayName;
+      
+      // Randomizar habilidades (sempre s21 e s22 para exemplo)
+      document.getElementById('ability-1').innerHTML = `<img src="public/pokemons/moves/${randomPokemon.name}_s21.png" alt="Ability 1" class="w-full h-full object-contain p-2">`;
+      document.getElementById('ability-2').innerHTML = `<img src="public/pokemons/moves/${randomPokemon.name}_s22.png" alt="Ability 2" class="w-full h-full object-contain p-2">`;
+      
+      // Randomizar battle item
+      const randomBattleItem = battleItems[Math.floor(Math.random() * battleItems.length)];
+      document.getElementById('battle-item').innerHTML = `<img src="public/battle-items/${randomBattleItem}.png" alt="Battle Item" class="w-full h-full object-contain p-2">`;
+      
+      // Randomizar estatísticas
+      document.getElementById('stat-score').textContent = Math.floor(Math.random() * 300 + 100);
+      document.getElementById('stat-ko').textContent = Math.floor(Math.random() * 20);
+      document.getElementById('stat-assists').textContent = Math.floor(Math.random() * 15);
+      document.getElementById('stat-interrupts').textContent = Math.floor(Math.random() * 10);
+      document.getElementById('stat-damage-dealt').textContent = Math.floor(Math.random() * 100000 + 50000);
+      document.getElementById('stat-damage-taken').textContent = Math.floor(Math.random() * 80000 + 30000);
+      document.getElementById('stat-recovery').textContent = Math.floor(Math.random() * 30000 + 10000);
+      
+      document.getElementById('team-1-score').textContent = Math.floor(Math.random() * 300 + 300);
+      document.getElementById('team-2-score').textContent = Math.floor(Math.random() * 300 + 400);
+      
+      document.getElementById('gen-ko-min').textContent = (Math.random() * 2 + 0.5).toFixed(1);
+      document.getElementById('gen-ko-a').textContent = Math.floor(Math.random() * 20 + 10);
+      document.getElementById('gen-exp-min').textContent = Math.floor(Math.random() * 1000 + 1000);
+      
+      // Atualizar radar
+      updateRadarChart();
+    }
+    
+    // Toggle foto do jogador
+    function togglePlayerPhoto() {
+      const container = document.getElementById('player-photo-container');
+      const photo = document.getElementById('player-photo');
+      
+      if (photo.style.display === 'none') {
+        photo.style.display = 'block';
+      } else {
+        photo.style.display = 'none';
+      }
+    }
+    
+    // Atualizar gráfico radar com valores aleatórios
+    function updateRadarChart() {
+      const values = Array(6).fill(0).map(() => Math.random() * 80 + 20);
+      const center = 100;
+      const radius = 80;
+      const angleStep = (2 * Math.PI) / 6;
+      
+      let points = [];
+      const circlePositions = [];
+      
+      for (let i = 0; i < 6; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const r = radius * (values[i] / 100);
+        const x = center + r * Math.cos(angle);
+        const y = center + r * Math.sin(angle);
+        points.push(`${x},${y}`);
+        circlePositions.push({ x, y });
+      }
+      
+      document.getElementById('radar-polygon').setAttribute('points', points.join(' '));
+      
+      // Atualizar pontos nos vértices
+      const svg = document.querySelector('svg');
+      const circles = svg.querySelectorAll('circle[fill="#c4b5fd"]');
+      circlePositions.forEach((pos, i) => {
+        if (circles[i]) {
+          circles[i].setAttribute('cx', pos.x);
+          circles[i].setAttribute('cy', pos.y);
+        }
+      });
+    }
+    
+    // Exportar para Canvas (simulado)
+    function exportToCanvas() {
+      alert('Para exportar, use a extensão no Chrome!\n\nEste é apenas um preview para desenvolvimento visual.');
+    }
+    
+    // Inicialização
+    console.log('🎨 Preview carregado com fonte Exo 2!');
+    console.log('💡 Dica: Use o DevTools (F12) para editar em tempo real.');
+  </script>
+
+</body>
+</html>

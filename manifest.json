@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "UniteAPI Data Scraper",
+  "version": "1.0",
+  "description": "Coleta e analisa dados de jogadores do Pokémon Unite no UniteApi via notificações na tela",
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "contextMenus"],
+  "host_permissions": ["https://uniteapi.dev/*"],
+  "action": {
+    "default_title": "UniteAPI Data Scraper - Clique para executar",
+    "default_width": 400,
+    "default_height": 300
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://uniteapi.dev/*"],
+      "js": [
+        "data/pokemons.js",
+        "modules/pokemonData.js",
+        "modules/itemMapper.js",
+        "modules/photoUpload.js",
+        "modules/statsCalculator.js",
+        "modules/imageGenerator.js",
+        "contentScript.modular.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "contentScript.modular.js",
+        "modules/*.js",
+        "data/pokemons.js",
+        "public/pokemons/*",
+        "public/battle-items/*",
+        "public/held-itens/*"
+      ],
+      "matches": ["https://uniteapi.dev/*"]
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

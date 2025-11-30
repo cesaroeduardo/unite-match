@@ -1,0 +1,49 @@
+{
+  "name": "unite-api-data-scraper",
+  "version": "1.0.0",
+  "description": "Chrome extension to scrape and analyze Pokémon Unite player data from UniteApi",
+  "main": "popup.js",
+  "scripts": {
+    "build": "echo 'Build completed - Chrome extension ready'",
+    "dev": "echo 'Development mode - use chrome://extensions/ to load'",
+    "test": "echo 'No tests configured yet'",
+    "lint": "echo 'No linter configured yet'",
+    "clean": "echo 'Cleaning build artifacts...'",
+    "package": "echo 'Creating extension package...'"
+  },
+  "keywords": [
+    "chrome-extension",
+    "pokemon-unite",
+    "unite-api",
+    "data-scraper",
+    "web-scraping",
+    "indexeddb",
+    "chrome-extensions-api"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/unite-time.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/unite-time/issues"
+  },
+  "homepage": "https://github.com/your-username/unite-time#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "manifest": {
+    "version": 3,
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "storage"
+    ],
+    "host_permissions": [
+      "https://uniteapi.dev/*"
+    ]
+  }
+}
