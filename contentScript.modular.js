@@ -1576,41 +1576,10 @@ class UniteApiScraper {
   }
 
   importSoraFont() {
-    try {
-      // Verificar se a fonte já foi importada
-      if (
-        document.querySelector(
-          'link[href*="fonts.googleapis.com/css2?family=Sora"]'
-        )
-      ) {
-        console.log('✅ Fonte Sora já importada');
-        return;
-      }
-
-      // Criar link para importar a fonte Sora
-      const fontLink = document.createElement('link');
-      fontLink.rel = 'preconnect';
-      fontLink.href = 'https://fonts.googleapis.com';
-
-      const fontLink2 = document.createElement('link');
-      fontLink2.rel = 'preconnect';
-      fontLink2.href = 'https://fonts.gstatic.com';
-      fontLink2.crossOrigin = 'anonymous';
-
-      const fontLink3 = document.createElement('link');
-      fontLink3.rel = 'stylesheet';
-      fontLink3.href =
-        'https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap';
-
-      // Adicionar ao head do documento
-      document.head.appendChild(fontLink);
-      document.head.appendChild(fontLink2);
-      document.head.appendChild(fontLink3);
-
-      console.log('✅ Fonte Sora importada com sucesso');
-    } catch (error) {
-      console.error('❌ Erro ao importar fonte Sora:', error);
-    }
+    // NOTA: Importação de fontes externas foi desativada para conformidade com Chrome Web Store
+    // A extensão agora usa fontes do sistema como fallback (sans-serif)
+    // Isso resolve a violação de "código hospedado remotamente" no Manifesto V3
+    console.log('ℹ️ Usando fontes do sistema (sans-serif) - conformidade Chrome Web Store');
   }
 
   async startScraping() {

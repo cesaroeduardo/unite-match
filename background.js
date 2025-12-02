@@ -55,7 +55,7 @@ chrome.action.onClicked.addListener(tab => {
   } else {
     console.log('⚠️ Aba não está no UniteApi, redirecionando...');
     // Redirecionar para o UniteApi se não estiver na página correta
-    chrome.tabs.update(tab.id, { url: 'https://uniteapi.dev' });
+    chrome.tabs.update(tab.id, { url: 'https://uniteapi.dev/en' });
   }
 });
 

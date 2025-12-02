@@ -1,0 +1,16 @@
+# Arquivos de desenvolvimento que não devem ir para o pacote Chrome Web Store
+preview.html
+examples/
+*.zip
+
+# Node modules (se houver)
+node_modules/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.log
+*.tmp
+
