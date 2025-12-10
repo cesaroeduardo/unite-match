@@ -57,3 +57,4 @@ Esta versão corrige as violações de política da Chrome Web Store que causara
 
 
 
+

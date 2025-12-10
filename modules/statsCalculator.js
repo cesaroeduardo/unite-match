@@ -54,6 +54,7 @@ class StatsCalculator {
   }
 
   // Calcular valores para gráfico radar
+  // Usa valores de referência fixos (médias) ao invés de normalização relativa
   calculateRadarStats(playerData, allPlayersData) {
     if (!playerData) {
       return {
@@ -62,49 +63,45 @@ class StatsCalculator {
         damageTaken: 0,
         damageDealt: 0,
         scoring: 0,
-        interrupts: 0,
+        healing: 0,
       };
     }
 
-    // Garantir que allPlayersData é um array válido
-    if (!Array.isArray(allPlayersData) || allPlayersData.length === 0) {
-      allPlayersData = [playerData];
-    }
+    // Valores de referência (médias) que representam 100%
+    const REFERENCE_VALUES = {
+      knockouts: 15,        // 15 knockouts = 100%
+      assists: 20,          // 20 assists = 100%
+      scoring: 250,         // 300 scoring = 100%
+      damageDealt: 170000,  // 170k damage dealt = 100%
+      damageTaken: 120000,  // 120k damage taken = 100%
+      healing: 170000,      // 170k healing = 100%
+    };
 
-    // Normalizar valores baseado nos máximos da partida
     try {
-      const assists = allPlayersData.map(p => p && p.assists || 0);
-      const kills = allPlayersData.map(p => p && p.kills || 0);
-      const damageTaken = allPlayersData.map(p => p && p.damageTaken || 0);
-      const damageDealt = allPlayersData.map(p => p && p.damageDone || 0);
-      const scores = allPlayersData.map(p => p && p.playerScore || 0);
-      const interrupts = allPlayersData.map(p => p && p.interrupts || 0);
-      
-      const maxAssists = Math.max(...assists, 1);
-      const maxKills = Math.max(...kills, 1);
-      const maxDamageTaken = Math.max(...damageTaken, 1);
-      const maxDamageDealt = Math.max(...damageDealt, 1);
-      const maxScore = Math.max(...scores, 1);
-      const maxInterrupts = Math.max(...interrupts, 1);
+      // Calcular porcentagem baseada nos valores de referência
+      // Limitar a 100% máximo
+      const calculatePercentage = (value, reference) => {
+        const percentage = (value / reference) * 100;
+        return Math.min(Math.round(percentage), 100);
+      };
 
-      // Normalizar para escala 0-100
       return {
-        assists: Math.round(((playerData.assists || 0) / maxAssists) * 100),
-        knockouts: Math.round(((playerData.kills || 0) / maxKills) * 100),
-        damageTaken: Math.round(((playerData.damageTaken || 0) / maxDamageTaken) * 100),
-        damageDealt: Math.round(((playerData.damageDone || 0) / maxDamageDealt) * 100),
-        scoring: Math.round(((playerData.playerScore || 0) / maxScore) * 100),
-        interrupts: Math.round(((playerData.interrupts || 0) / maxInterrupts) * 100),
+        assists: calculatePercentage(playerData.assists || 0, REFERENCE_VALUES.assists),
+        knockouts: calculatePercentage(playerData.kills || 0, REFERENCE_VALUES.knockouts),
+        damageTaken: calculatePercentage(playerData.damageTaken || 0, REFERENCE_VALUES.damageTaken),
+        damageDealt: calculatePercentage(playerData.damageDone || 0, REFERENCE_VALUES.damageDealt),
+        scoring: calculatePercentage(playerData.playerScore || 0, REFERENCE_VALUES.scoring),
+        healing: calculatePercentage(playerData.healing || 0, REFERENCE_VALUES.healing),
       };
     } catch (error) {
       console.error('❌ Erro ao calcular stats do radar:', error);
       return {
-        assists: 50,
-        knockouts: 50,
-        damageTaken: 50,
-        damageDealt: 50,
-        scoring: 50,
-        interrupts: 50,
+        assists: 0,
+        knockouts: 0,
+        damageTaken: 0,
+        damageDealt: 0,
+        scoring: 0,
+        healing: 0,
       };
     }
   }

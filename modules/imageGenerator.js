@@ -97,14 +97,14 @@ class ImageGenerator {
     const axes = 6;
     const angleStep = (2 * Math.PI) / axes;
     
-    const labels = ['Assists', 'KO', 'Dmg Taken', 'Dmg Dealt', 'Score', 'Interrupts'];
+    const labels = ['Assists', 'KO', 'Dmg Taken', 'Dmg Dealt', 'Healing', 'Score'];
     const values = [
       stats.assists || 0,
       stats.knockouts || 0,
       stats.damageTaken || 0,
       stats.damageDealt || 0,
+      stats.healing || 0,
       stats.scoring || 0,
-      stats.interrupts || 0,
     ];
     
     // Desenhar círculos de fundo
@@ -583,19 +583,19 @@ class ImageGenerator {
       // Desenhar eixos e labels
       const axes = 6;
       const angleStep = (2 * Math.PI) / axes;
-      const labels = ['Interrupts', 'Knockouts', 'Damage Taken', 'Damage Dealt', 'Scoring', 'Assists'];
+      const labels = ['Scoring', 'Knockouts', 'Damage Taken', 'Damage Dealt', 'Healing', 'Assists'];
       const values = [
-        radarStats.interrupts || 50,
+        radarStats.scoring || 50,
         radarStats.knockouts || 50,
         radarStats.damageTaken || 50,
         radarStats.damageDealt || 50,
-        radarStats.scoring || 50,
+        radarStats.healing || 50,
         radarStats.assists || 50,
       ];
       
       ctx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
       ctx.lineWidth = 1;
-      ctx.fillStyle = '#e9d5ff';
+      ctx.fillStyle = '#ffffff';
       // Aumentar tamanho da fonte dos labels (de 10px para 14px para melhor legibilidade)
       ctx.font = 'bold 14px "Exo 2", sans-serif';
       ctx.textAlign = 'center';
@@ -677,12 +677,12 @@ class ImageGenerator {
       this.roundRect(x, genStatsY, width, genStatsHeight, 16);
       ctx.fill();
       
-      // Mudança: agora são 4 estatísticas (Score, Knockouts, Assists, Interrupts) ao invés de 3
+      // Mudança: agora são 4 estatísticas (Score, Knockouts, Assists, Healing) ao invés de 3
       const genStats = [
         { label: 'Score', value: mainPlayer.playerScore || 0 },
         { label: 'Knockouts', value: mainPlayer.kills || 0 },
         { label: 'Assists', value: mainPlayer.assists || 0 },
-        { label: 'Interrupts', value: mainPlayer.interrupts || 0 },
+        { label: 'Healing', value: mainPlayer.healing || 0 },
       ];
       
       // No preview: gap-3 = 12px entre colunas, border-4 = 4px border branca
@@ -783,7 +783,7 @@ class ImageGenerator {
             damageTaken: 50,
             damageDealt: 50,
             scoring: 50,
-            interrupts: 50
+            healing: 50
           };
         }
       }

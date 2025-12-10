@@ -1036,7 +1036,7 @@ class MatchDataExtractor {
         playerScore: this.extractScoreFromCell(scoreCell),
         kills: this.extractKillsFromCell(kaiCell),
         assists: this.extractAssistsFromCell(kaiCell),
-        interrupts: this.extractInterruptsFromCell(kaiCell),
+        healing: this.extractInterruptsFromCell(kaiCell),
         damageDone: this.extractDamageDoneFromCell(damageCell),
         damageTaken: this.extractDamageTakenFromCell(damageCell),
         damageHealed: this.extractDamageHealedFromCell(damageCell),
