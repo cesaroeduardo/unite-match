@@ -44,7 +44,7 @@ Copy-Item -Path "modules" -Destination "temp-package/" -Recurse
 Copy-Item -Path "public" -Destination "temp-package/" -Recurse
 
 # Criar ZIP
-Compress-Archive -Path "temp-package\*" -DestinationPath "unite-match-webstore.zip" -Force
+Compress-Archive -Path "temp-package\*" -DestinationPath "unite-match.zip" -Force
 
 # Limpar pasta temporária
 Remove-Item -Path "temp-package" -Recurse -Force
