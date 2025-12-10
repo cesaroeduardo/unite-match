@@ -75,3 +75,7 @@ Antes de enviar, abra o arquivo ZIP e verifique que:
 5. Envie o arquivo `unite-match-webstore.zip`
 6. Aguarde a análise (pode levar alguns dias)
 
+
+
+
+

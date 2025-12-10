@@ -67,3 +67,6 @@ if ($zipSize -gt 50) {
     Write-Host "✅ Tamanho do pacote está dentro do limite (50MB)" -ForegroundColor Green
 }
 
+
+
+

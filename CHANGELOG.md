@@ -53,3 +53,7 @@ Esta versão corrige as violações de política da Chrome Web Store que causara
 ## [1.0.0] - 2025-12-01
 - Lançamento inicial
 
+
+
+
+

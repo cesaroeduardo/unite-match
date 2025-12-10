@@ -52,7 +52,7 @@ const pokemons = [
   },
   {
     name: "Mega Charizard",
-    dex: 7,
+    dex: 6.1,
     images: {
       main: "/pokemons/roster-mega-charizard.png",
       big: "/pokemons/roster-mega-charizard-2x.png",
@@ -450,6 +450,31 @@ const pokemons = [
     difficulty: 2,
   },
   {
+    name: "Mega Gyarados",
+    dex: 130.1,
+    images: {
+      main: "/pokemons/roster-mega-gyarados.png",
+      big: "/pokemons/roster-mega-gyarados-2x.png",
+      complete: "/pokemons/stat-mega-gyarados.png",
+      move_s11: "/pokemons/moves/mega-gyarados_s11.png",
+      move_s21: "/pokemons/moves/mega-gyarados_s21.png",
+    },
+    active: true,
+    battleType: "ALLROUNDER",
+    stats: {
+      "offense": 4.5,
+      "endurance": 3.5,
+      "mobility": 2.5,
+      "scoring": 2,
+      "support": 1.5
+    },
+    difficulty: 1,
+    tags: [
+      "ALLROUNDER",
+      "MELEE",
+    ]
+  },
+  {
     name: "Lapras",
     dex: 131,
     images: {
@@ -472,6 +497,33 @@ const pokemons = [
       scoring: 2,
       support: 3,
     },
+  },
+  {
+    name: "Vaporeon",
+    dex: 134,
+    images: {
+      main: "/pokemons/roster-vaporeon.png",
+      big: "/pokemons/roster-vaporeon-2x.png",
+      complete: "/pokemons/stat-vaporeon.png",
+      move_s11: "/pokemons/moves/vaporeon_s11.png",
+      move_s12: "/pokemons/moves/vaporeon_s12.png",
+      move_s21: "/pokemons/moves/vaporeon_s21.png",
+      move_s22: "/pokemons/moves/vaporeon_s22.png",
+    },
+    active: true,
+    battleType: "DEFENDER",
+    stats: {
+      offense: 2,
+      endurance: 4,
+      mobility: 3,
+      scoring: 2,
+      support: 4,
+    },
+    tags: [
+      "DEFENDER",
+      "RANGED",
+    ],
+    difficulty: 2,
   },
   {
     name: "Snorlax",
@@ -1005,7 +1057,7 @@ const pokemons = [
   },
   {
     name: "Mega Lucario",
-    dex: 449,
+    dex: 448.1,
     images: {
       main: "/pokemons/roster-mega-lucario.png",
       big: "/pokemons/roster-mega-lucario-2x.png",
